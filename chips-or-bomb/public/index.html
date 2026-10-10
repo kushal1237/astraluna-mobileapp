@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHIPS OR BOMB — 1v1 Multiplayer Browser Game</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- ==================== 1. AUTH SCREEN ==================== -->
+    <div id="screen-auth" class="screen active">
+      <div style="text-align: center; margin-top: 20px;">
+        <h1 class="game-title">CHIPS OR BOMB</h1>
+        <p class="welcome-msg">Virtual Token 1v1 Arena</p>
+      </div>
+
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active">Login</button>
+          <button id="tab-register" class="auth-tab">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="login-email" class="form-control" placeholder="player@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 10px;">LOGIN</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="form-register" style="display: none;">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="reg-email" class="form-control" placeholder="player@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Unique Username</label>
+            <input type="text" id="reg-username" class="form-control" placeholder="CoolPlayer99" required minlength="3" maxlength="20">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required minlength="6">
+          </div>
+          <div style="font-size: 0.8rem; color: #10b981; margin-bottom: 12px; text-align: center;">
+            🎁 Includes 1,000 Free 🪙 Starting Bonus Tokens!
+          </div>
+          <button type="submit" class="btn btn-primary">CREATE ACCOUNT</button>
+        </form>
+      </div>
+
+      <div class="lobby-footer">
+        100% Virtual Tokens • No Real Money Gambling
+      </div>
+    </div>
+
+    <!-- ==================== 2. MAIN LOBBY ==================== -->
+    <div id="screen-lobby" class="screen">
+      <div class="lobby-header">
+        <h1 class="game-title">CHIPS OR BOMB</h1>
+        <p class="welcome-msg">Welcome, <span class="username-display">Player</span>!</p>
+
+        <div class="lobby-balance-container">
+          <div class="token-badge">
+            <span class="token-icon">🪙</span>
+            <span class="user-token-balance">1,000</span> Tokens
+          </div>
+        </div>
+      </div>
+
+      <div class="lobby-menu">
+        <button id="btn-play-online" class="btn btn-primary">
+          <span>🎮</span> PLAY ONLINE
+        </button>
+        <button id="btn-play-friend" class="btn btn-secondary">
+          <span>👥</span> PLAY WITH FRIEND
+        </button>
+        <button id="btn-profile" class="btn btn-outline" style="margin-top: 15px;">
+          <span>📊</span> PROFILE
+        </button>
+        <button id="btn-avatar" class="btn btn-outline">
+          <span>🧑</span> AVATAR
+        </button>
+        <button id="btn-settings" class="btn btn-outline">
+          <span>⚙️</span> SETTINGS
+        </button>
+      </div>
+
+      <div class="lobby-footer">
+        Play responsibly. Tokens have zero cash value.
+      </div>
+    </div>
+
+    <!-- ==================== 3. AVATAR CREATOR ==================== -->
+    <div id="screen-avatar" class="screen">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h2 style="font-size: 1.5rem; font-weight: 800;">AVATAR CREATOR</h2>
+        <p class="welcome-msg" style="margin-bottom: 5px;">Customize your living room character</p>
+      </div>
+
+      <div class="avatar-preview-box">
+        <canvas id="avatar-canvas"></canvas>
+      </div>
+
+      <div id="avatar-controls" style="flex: 1; overflow-y: auto; padding-right: 5px;"></div>
+
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button id="avatar-back-btn" class="btn btn-outline" style="flex: 1;">BACK</button>
+        <button id="avatar-save-btn" class="btn btn-primary" style="flex: 2;">SAVE AVATAR</button>
+      </div>
+    </div>
+
+    <!-- ==================== 4. STAKE SELECTION ==================== -->
+    <div id="screen-stake" class="screen" style="justify-content: center;">
+      <div style="text-align: center; margin-bottom: 10px;">
+        <h2 style="font-size: 1.6rem; font-weight: 900;">CHOOSE MATCH STAKE</h2>
+        <div class="token-badge" style="margin-top: 10px;">
+          Balance: <span class="user-token-balance">1,000</span> 🪙
+        </div>
+      </div>
+
+      <div class="stake-grid">
+        <div class="stake-card selected" data-stake="100">
+          <div class="stake-val">100 🪙</div>
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Standard</div>
+        </div>
+        <div class="stake-card" data-stake="250">
+          <div class="stake-val">250 🪙</div>
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">High Roll</div>
+        </div>
+        <div class="stake-card" data-stake="500">
+          <div class="stake-val">500 🪙</div>
+          <div style="font-size: 0.75rem; color: #ef4444; margin-top: 4px;">ALL-IN</div>
+        </div>
+      </div>
+
+      <div id="stake-status-msg" class="stake-status">
+        Both players must agree on the same stake.
+      </div>
+
+      <button id="btn-confirm-stake" class="btn btn-primary">CONFIRM STAKE</button>
+    </div>
+
+    <!-- ==================== 5. MATCH SCREEN (LIVING ROOM & 3x3 GRID) ==================== -->
+    <div id="screen-match" class="screen" style="padding: 10px;">
+      <div id="match-living-room" class="living-room" style="flex: 1;">
+
+        <div class="room-wall-item" style="left: 20px;">🖼️</div>
+        <div class="room-wall-item" style="right: 20px;">🕰️</div>
+
+        <!-- Score & Stake Display Header -->
+        <div class="score-board">
+          <div style="color: #60a5fa;"><span id="match-my-name">You</span>: <span id="match-my-score">0</span></div>
+          <div id="match-stake-display" style="color: #fbbf24;">Stake: 100 🪙</div>
+          <div style="color: #ef4444;"><span id="match-opp-name">Opponent</span>: <span id="match-opp-score">0</span></div>
+        </div>
+
+        <!-- Living Room Couch Area with Cardboard Divider -->
+        <div class="players-area">
+
+          <!-- Player 1 (You) Couch -->
+          <div class="player-spot">
+            <div class="player-label" id="p1-label">You</div>
+            <div class="couch-container">
+              <canvas id="p1-couch-avatar" class="player-avatar-canvas"></canvas>
+              <!-- 2D Couch SVG -->
+              <svg class="couch-svg" viewBox="0 0 110 65">
+                <rect x="5" y="10" width="100" height="35" rx="8" fill="#475569" />
+                <rect x="0" y="25" width="15" height="35" rx="5" fill="#334155" />
+                <rect x="95" y="25" width="15" height="35" rx="5" fill="#334155" />
+                <rect x="10" y="40" width="90" height="20" rx="6" fill="#1e293b" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Cardboard Divider in Center -->
+          <div class="cardboard-divider">
+            <div class="divider-text">CARDBOARD DIVIDER</div>
+          </div>
+
+          <!-- Player 2 (Opponent) Couch -->
+          <div class="player-spot">
+            <div class="player-label" id="p2-label">Opponent</div>
+            <div class="couch-container">
+              <canvas id="p2-couch-avatar" class="player-avatar-canvas"></canvas>
+              <!-- 2D Couch SVG -->
+              <svg class="couch-svg" viewBox="0 0 110 65">
+                <rect x="5" y="10" width="100" height="35" rx="8" fill="#94a3b8" />
+                <rect x="0" y="25" width="15" height="35" rx="5" fill="#64748b" />
+                <rect x="95" y="25" width="15" height="35" rx="5" fill="#64748b" />
+                <rect x="10" y="40" width="90" height="20" rx="6" fill="#475569" />
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Status Message Banner -->
+        <div id="match-status-msg" style="font-weight: 800; font-size: 0.95rem; color: #fbbf24; margin-bottom: 8px; text-align: center;">
+          Choose a card!
+        </div>
+
+        <!-- 3x3 Card Grid -->
+        <div class="game-grid-container">
+          <div id="chips-grid" class="chips-grid"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- 1. PLAY WITH FRIEND MODAL -->
+    <div id="modal-friend" class="modal-overlay">
+      <div class="modal-card">
+        <h3 class="modal-title">PLAY WITH FRIEND</h3>
+        <p class="modal-subtitle">Create a room code or join an existing room</p>
+
+        <button id="btn-create-room" class="btn btn-primary" style="margin-bottom: 15px;">
+          CREATE PRIVATE ROOM
+        </button>
+
+        <div id="friend-room-code-display" style="font-weight: 900; font-size: 1.2rem; color: #fbbf24; margin-bottom: 15px;"></div>
+
+        <div style="border-top: 1px solid var(--card-border); padding-top: 15px; margin-top: 10px;">
+          <div class="form-group">
+            <input type="text" id="input-room-code" class="form-control" placeholder="ENTER ROOM CODE" style="text-align: center; text-transform: uppercase; font-weight: 800; letter-spacing: 2px;">
+          </div>
+          <button id="btn-join-room" class="btn btn-secondary">JOIN ROOM</button>
+        </div>
+
+        <button id="btn-close-friend-modal" class="btn btn-outline" style="margin-top: 10px;">CANCEL</button>
+      </div>
+    </div>
+
+    <!-- 2. MATCH RESULT MODAL -->
+    <div id="modal-match-end" class="modal-overlay">
+      <div class="modal-card">
+        <h3 id="end-title" class="modal-title">🏆 YOU WIN!</h3>
+
+        <div id="end-token-change" style="font-size: 2.2rem; font-weight: 900; margin: 15px 0;">
+          +100 🪙
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Final Balance:</p>
+        <div id="end-final-balance" style="font-size: 1.4rem; font-weight: 800; color: #fbbf24; margin-bottom: 20px;">
+          1,100 🪙
+        </div>
+
+        <button id="btn-play-again" class="btn btn-primary">PLAY AGAIN</button>
+        <button id="btn-return-lobby" class="btn btn-outline">RETURN TO LOBBY</button>
+      </div>
+    </div>
+
+    <!-- 3. ZERO TOKENS / WATCH AD MODAL -->
+    <div id="modal-zero-tokens" class="modal-overlay">
+      <div class="modal-card">
+        <div style="font-size: 3rem; margin-bottom: 10px;">🪙</div>
+        <h3 class="modal-title" style="color: #ef4444;">YOU'RE OUT OF TOKENS!</h3>
+        <p class="modal-subtitle">
+          You currently have 0 Tokens.<br>
+          Watch a short rewarded advertisement to receive 50 free Tokens.
+        </p>
+        <button id="btn-watch-ad" class="btn btn-primary">🎬 WATCH AD (+50 🪙)</button>
+      </div>
+    </div>
+
+    <!-- 4. REWARDEd AD SIMULATION MODAL -->
+    <div id="modal-ad" class="modal-overlay">
+      <div class="modal-card">
+        <h3 class="modal-title">SPONSORED AD</h3>
+        <p class="modal-subtitle">Watch the full video to claim your 50 🪙 reward</p>
+
+        <div id="ad-player-box" class="ad-player-box">
+          <div class="ad-video-mock">🎬 📺</div>
+          <div id="ad-timer-tag" class="ad-timer-tag">Reward in 5s</div>
+          <div id="ad-progress-bar" class="ad-progress-bar"></div>
+        </div>
+
+        <button id="ad-close-btn" class="btn btn-outline">Skip / Close (No Reward)</button>
+      </div>
+    </div>
+
+    <!-- 5. PROFILE MODAL -->
+    <div id="modal-profile" class="modal-overlay">
+      <div class="modal-card" style="max-width: 420px; text-align: left;">
+        <h3 class="modal-title" style="text-align: center;">PLAYER PROFILE</h3>
+        <div class="welcome-msg" style="text-align: center;"><span class="username-display">User</span></div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; margin: 15px 0;">
+          <div style="background: #0f172a; padding: 10px 5px; border-radius: 10px;">
+            <div style="font-size: 0.75rem; color: #94a3b8;">Played</div>
+            <strong id="prof-played">0</strong>
+          </div>
+          <div style="background: #0f172a; padding: 10px 5px; border-radius: 10px;">
+            <div style="font-size: 0.75rem; color: #10b981;">Wins</div>
+            <strong id="prof-wins" style="color: #10b981;">0</strong>
+          </div>
+          <div style="background: #0f172a; padding: 10px 5px; border-radius: 10px;">
+            <div style="font-size: 0.75rem; color: #ef4444;">Losses</div>
+            <strong id="prof-losses" style="color: #ef4444;">0</strong>
+          </div>
+          <div style="background: #0f172a; padding: 10px 5px; border-radius: 10px;">
+            <div style="font-size: 0.75rem; color: #3b82f6;">Draws</div>
+            <strong id="prof-draws" style="color: #3b82f6;">0</strong>
+          </div>
+        </div>
+
+        <h4 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 8px;">TRANSACTION HISTORY</h4>
+        <div id="prof-transactions" style="max-height: 160px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 15px;"></div>
+
+        <button id="btn-close-profile" class="btn btn-outline">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- 6. SETTINGS MODAL -->
+    <div id="modal-settings" class="modal-overlay">
+      <div class="modal-card">
+        <h3 class="modal-title">SETTINGS</h3>
+        <p class="modal-subtitle">Audio & Account Preferences</p>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border);">
+          <span>Sound Effects</span>
+          <input type="checkbox" id="setting-sound" checked style="width: 20px; height: 20px;" onchange="AudioManager.enabled = this.checked;">
+        </div>
+
+        <button id="btn-logout" class="btn btn-danger" style="margin-top: 20px;">LOGOUT</button>
+        <button id="btn-close-settings" class="btn btn-outline" style="margin-top: 10px;">CLOSE</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/audio.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/socket.js"></script>
+  <script src="/js/avatar.js"></script>
+  <script src="/js/adProvider.js"></script>
+  <script src="/js/game.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
